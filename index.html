@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Detective: The Midnight Whispers</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,700;1,400&family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b132b;
+            --card-bg: rgba(28, 37, 65, 0.75);
+            --card-border: rgba(255, 255, 255, 0.12);
+            --accent-cyan: #3a86ff;
+            --accent-yellow: #ff006e;
+            --highlight-bg: rgba(255, 0, 110, 0.2);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --meaning-color: #8338ec;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans KR', sans-serif;
+            background: #0b132b;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(58, 134, 255, 0.2) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 0, 110, 0.15) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 760px;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 28px;
+            padding: 32px 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        /* Top Progress & Mode Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .chapter-tag {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 14px;
+            letter-spacing: 1px;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.12);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .meaning-score {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 16px;
+            color: #ffb703;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Story Illustration / Scene Box */
+        .scene-card {
+            background: rgba(11, 19, 43, 0.6);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .scene-emoji {
+            font-size: 48px;
+            background: rgba(255, 255, 255, 0.05);
+            width: 80px;
+            height: 80px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .scene-title-group h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .scene-title-group p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Interactive Passage Area */
+        .passage-box {
+            font-size: 20px;
+            line-height: 1.85;
+            color: #f1f5f9;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+        }
+
+        /* Noticing Elements: Text chunks that trigger visual connections */
+        .chunk {
+            border-bottom: 2px dashed rgba(255, 255, 255, 0.2);
+            padding-bottom: 2px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .chunk:hover {
+            color: #38bdf8;
+            border-bottom-color: #38bdf8;
+        }
+
+        /* The Relative Clause Pattern - Subtle Visual Focus */
+        .rel-pattern {
+            background: rgba(131, 56, 236, 0.15);
+            border-radius: 6px;
+            padding: 2px 6px;
+            border: 1px solid rgba(131, 56, 236, 0.3);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .rel-pattern:hover, .rel-pattern.active {
+            background: rgba(255, 0, 110, 0.25);
+            border-color: #ff006e;
+            box-shadow: 0 0 15px rgba(255, 0, 110, 0.4);
+        }
+
+        /* Meaning Bridge Animation Box */
+        .meaning-bridge {
+            background: linear-gradient(135deg, rgba(58, 134, 255, 0.15), rgba(131, 56, 236, 0.15));
+            border: 1px solid rgba(58, 134, 255, 0.4);
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 24px;
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bridge-header {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #38bdf8;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .bridge-flow {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            flex-wrap: wrap;
+        }
+
+        .bridge-tag {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .bridge-tag.target {
+            background: #ff006e;
+            color: #fff;
+        }
+
+        .bridge-tag.detail {
+            background: #3a86ff;
+            color: #fff;
+        }
+
+        .bridge-arrow {
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+
+        /* Meaning Comprehension Quest */
+        .quest-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 22px;
+            margin-bottom: 24px;
+        }
+
+        .quest-question {
+            font-size: 16.5px;
+            font-weight: 600;
+            color: #f8fafc;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .quest-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .quest-opt {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .quest-opt:hover {
+            background: rgba(58, 134, 255, 0.2);
+            border-color: #3a86ff;
+            color: #fff;
+            transform: translateX(4px);
+        }
+
+        .quest-opt.correct {
+            background: rgba(74, 222, 128, 0.2) !important;
+            border-color: #4ade80 !important;
+            color: #4ade80 !important;
+            font-weight: 700;
+        }
+
+        .quest-opt.wrong {
+            background: rgba(248, 113, 113, 0.2) !important;
+            border-color: #f87171 !important;
+            color: #f87171 !important;
+        }
+
+        /* Bottom Controls */
+        .footer-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hint-text {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #ff006e, #8338ec);
+            color: #fff;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 0, 110, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-next:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.3);
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .btn-next:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 0, 110, 0.5);
+        }
+
+        /* Completion Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 19, 43, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 28px;
+            padding: 40px;
+            max-width: 460px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-card h2 {
+            font-size: 26px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #38bdf8, #ff006e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-card p {
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .btn-restart {
+            background: #3a86ff;
+            color: #fff;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <div class="chapter-tag">EPISODE <span id="chapter-num">1</span> / 3</div>
+            <div class="meaning-score">
+                🔍 Story Mastered: <span id="solved-count">0</span>/3
+            </div>
+        </header>
+
+        <!-- Scene Overview -->
+        <div class="scene-card">
+            <div class="scene-emoji" id="scene-emoji">🕵️‍♂️</div>
+            <div class="scene-title-group">
+                <h2 id="scene-title">1화: 박물관의 비밀 구역</h2>
+                <p id="scene-sub">스토리를 읽으며 인물과 행동을 자연스럽게 매칭해보세요.</p>
+            </div>
+        </div>
+
+        <!-- Story Passage with Implicit Grammar Noticing Structure -->
+        <div class="passage-box" id="passage-box">
+            <!-- Text injected via JS -->
+        </div>
+
+        <!-- Visual Meaning Bridge (Shows how information is attached dynamically) -->
+        <div class="meaning-bridge" id="meaning-bridge">
+            <div class="bridge-header">
+                ✨ Meaning Connection (의미 연결 고리)
+            </div>
+            <div class="bridge-flow" id="bridge-flow">
+                <!-- Visual connection tags injected here -->
+            </div>
+        </div>
+
+        <!-- Story Comprehension Task (Meaning-focused, NOT grammar rule focused) -->
+        <div class="quest-box">
+            <div class="quest-question" id="quest-question">
+                ❓ 스토리 이해도 체크
+            </div>
+            <div class="quest-options" id="quest-options">
+                <!-- Options injected via JS -->
+            </div>
+        </div>
+
+        <div class="footer-nav">
+            <div class="hint-text">
+                💡 <b>Tip:</b> 문장 속 <span style="color: #ff006e;">색상 박스</span>를 클릭하면 대상과 정보가 어떻게 연결되는지 보입니다.
+            </div>
+            <button class="btn-next" id="btn-next" onclick="nextChapter()" disabled>다음 스토리 ▶</button>
+        </div>
+    </div>
+
+    <!-- Final Success Modal -->
+    <div class="modal" id="finish-modal">
+        <div class="modal-card">
+            <div style="font-size: 50px; margin-bottom: 12px;">🎉</div>
+            <h2>Story Detective Complete!</h2>
+            <p>문법 규칙을 외우지 않고도, 문장이 <b>'어떤 대상(Subject)'</b>에 <b>'어떤 설명(Information)'</b>을 덧붙여 나가는지 자연스럽게 체득하셨습니다!</p>
+            <button class="btn-restart" onclick="restartApp()">다시 읽어보기 🔄</button>
+        </div>
+    </div>
+
+    <script>
+        // Meaning-oriented Story Data with Natural Noticing (Implicit Focus)
+        const stories = [
+            {
+                chapter: 1,
+                emoji: "🔍",
+                title: "1화: 심야의 미스터리 수수께끼",
+                sub: "누가, 무슨 일을 했는지 스토리의 핵심 흐름에 집중해보세요.",
+                // Story with Noticing Highlight Structure
+                passage: "Last night, Detective James chased a suspect <span class='rel-pattern' onclick='triggerNoticing(0)'>who dropped a glowing key</span> near the library.",
+                // Visual Bridge mapping: Subject -> Connecting Word -> Attached Info
+                bridge: {
+                    mainTarget: "a suspect (수사 대상)",
+                    connectWord: "who",
+                    attachedInfo: "dropped a glowing key (빛나는 열쇠를 떨어뜨림)"
+                },
+                // Question focuses on STORY MEANING, forcing the learner to correctly attach the relative clause to the antecedent
+                question: "위 글에 따르면, '빛나는 열쇠를 떨어뜨린 사람'은 누구인가요?",
+                options: [
+                    { text: "Detective James (제임스 형사)", correct: false },
+                    { text: "The suspect (도망치던 용의자)", correct: true },
+                    { text: "The librarian (도서관 관리인)", correct: false }
+                ]
+            },
+            {
+                chapter: 2,
+                emoji: "🔐",
+                title: "2화: 비밀 상자의 열쇠",
+                text: "He picked up the key <span class='rel-pattern' onclick='triggerNoticing(1)'>which opened a hidden drawer</span> in the office. Inside was an old map.",
+                bridge: {
+                    mainTarget: "the key (열쇠)",
+                    connectWord: "which",
+                    attachedInfo: "opened a hidden drawer (비밀 서랍을 열었음)"
+                },
+                question: "제임스 형사가 찾은 '비밀 서랍을 열어준 물건'은 무엇인가요?",
+                options: [
+                    { text: "An old map (고지도)", correct: false },
+                    { text: "The key (그가 주운 열쇠)", correct: true },
+                    { text: "The suspect's phone (용의자의 폰)", correct: false }
+                ]
+            },
+            {
+                chapter: 3,
+                emoji: "📜",
+                title: "3화: 고지도 속의 인물",
+                text: "The map belonged to a scientist <span class='rel-pattern' onclick='triggerNoticing(2)'>whose inventions changed the whole world</span> 100 years ago.",
+                bridge: {
+                    mainTarget: "a scientist (한 과학자)",
+                    connectWord: "whose",
+                    attachedInfo: "inventions changed the world (그의 발명품들이 세상을 바꿈)"
+                },
+                question: "100년 전에 세상을 바꾼 것은 정확히 '과학자의 무엇'이었나요?",
+                options: [
+                    { text: "과학자의 발명품들 (his inventions)", correct: true },
+                    { text: "과학자의 비밀 지도 (his secret map)", correct: false },
+                    { text: "과학자의 도서관 (his library)", correct: false }
+                ]
+            }
+        ];
+
+        let currentIdx = 0;
+        let solvedCount = 0;
+        let isCurrentSolved = false;
+
+        function renderChapter(idx) {
+            const data = stories[idx];
+            document.getElementById('chapter-num').innerText = data.chapter;
+            document.getElementById('scene-emoji').innerText = data.emoji;
+            document.getElementById('scene-title').innerText = data.title;
+            document.getElementById('scene-sub').innerText = data.sub;
+            
+            document.getElementById('passage-box').innerHTML = data.passage || data.text;
+            document.getElementById('meaning-bridge').style.display = 'none';
+            
+            // Quest rendering
+            document.getElementById('quest-question').innerHTML = "🎯 <b>Meaning Quest:</b> " + data.question;
+            const optBox = document.getElementById('quest-options');
+            optBox.innerHTML = '';
+
+            data.options.forEach((opt, oIdx) => {
+                const btn = document.createElement('button');
+                btn.className = 'quest-opt';
+                btn.innerHTML = `<span>${opt.text}</span> <span class='status-icon'></span>`;
+                btn.onclick = () => selectAnswer(oIdx, opt.correct, btn);
+                optBox.appendChild(btn);
+            });
+
+            document.getElementById('btn-next').disabled = true;
+            isCurrentSolved = false;
+        }
+
+        // Implicit Learning Mechanism: Visualizing How English Attaches Meaning
+        function triggerNoticing(idx) {
+            const data = stories[idx];
+            const patternEl = document.querySelector('.rel-pattern');
+            if(patternEl) patternEl.classList.add('active');
+
+            const bridgeBox = document.getElementById('meaning-bridge');
+            const flowBox = document.getElementById('bridge-flow');
+
+            flowBox.innerHTML = `
+                <span class="bridge-tag target">${data.bridge.mainTarget}</span>
+                <span class="bridge-arrow">➕ [${data.bridge.connectWord}]</span>
+                <span class="bridge-tag detail">${data.bridge.attachedInfo}</span>
+            `;
+
+            bridgeBox.style.display = 'block';
+        }
+
+        function selectAnswer(optIdx, isCorrect, btnEl) {
+            if (isCurrentSolved) return;
+
+            const allOpts = document.querySelectorAll('.quest-opt');
+
+            if (isCorrect) {
+                btnEl.classList.add('correct');
+                btnEl.querySelector('.status-icon').innerText = '✓';
+                isCurrentSolved = true;
+                solvedCount++;
+                document.getElementById('solved-count').innerText = solvedCount;
+
+                // Auto Trigger Noticing visual if user hasn't clicked it yet
+                triggerNoticing(currentIdx);
+
+                // Disable options
+                allOpts.forEach(o => o.style.pointerEvents = 'none');
+
+                if (currentIdx === stories.length - 1) {
+                    setTimeout(() => {
+                        document.getElementById('finish-modal').style.display = 'flex';
+                    }, 1000);
+                } else {
+                    document.getElementById('btn-next').disabled = false;
+                }
+            } else {
+                btnEl.classList.add('wrong');
+                btnEl.querySelector('.status-icon').innerText = '✕';
+                setTimeout(() => {
+                    btnEl.classList.remove('wrong');
+                }, 800);
+            }
+        }
+
+        function nextChapter() {
+            if (currentIdx < stories.length - 1) {
+                currentIdx++;
+                renderChapter(currentIdx);
+            }
+        }
+
+        function restartApp() {
+            currentIdx = 0;
+            solvedCount = 0;
+            document.getElementById('solved-count').innerText = 0;
+            document.getElementById('finish-modal').style.display = 'none';
+            renderChapter(0);
+        }
+
+        // Init
+        window.onload = () => {
+            renderChapter(0);
+        };
+    </script>
+</body>
+</html>
